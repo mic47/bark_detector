@@ -91,8 +91,8 @@ def main(model_version:str, file: str) -> None:
 
 def pa() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model-version", type=str)
-    parser.add_argument("--files", nargs="+", default=["2021-05-29"])
+    parser.add_argument("--model-version", type=str, required=True)
+    parser.add_argument("--files", nargs="+", default=["2021-05-29"], required=True)
     return parser.parse_args()
 
 if __name__ == "__main__":

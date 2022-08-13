@@ -14,12 +14,15 @@ def main(model_path: str, input_files: List[str]) -> None:
         with open(filename) as f:
             data.extend(json.loads(f.read()).values())
     models = {}
-    for train_label in ["bark", "talk"]:
+    for train_label in ["bark", "talk", "whine"]:
         samples = []
         labels = []
         for frame in data:
             samples.append(frame["data"])
             labels.append(train_label in frame["labels"])
+        if len(set(labels)) == 1:
+            print("Skipping", train_label)
+            continue
         X = np.array(samples, dtype=np.float64)
         y = np.array(labels, dtype=np.bool8)
         print(X.shape)
@@ -38,8 +41,8 @@ def main(model_path: str, input_files: List[str]) -> None:
 
 def pa() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input-files", nargs="+", default=["data/2021-01-29.train.json"])
-    parser.add_argument("--model-path", type=str)
+    parser.add_argument("--input-files", nargs="+", default=["data/2021-01-29.train.json"], required=True)
+    parser.add_argument("--model-path", type=str, required=True)
     return parser.parse_args()
 
 if __name__ == "__main__":

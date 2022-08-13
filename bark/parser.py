@@ -61,9 +61,9 @@ class Label:
 
 def pa() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input-sound", type=str)
-    parser.add_argument("--input-labels", type=str)
-    parser.add_argument("--output-path", type=str)
+    parser.add_argument("--input-sound", type=str, required=True)
+    parser.add_argument("--input-labels", type=str, required=True)
+    parser.add_argument("--output-path", type=str, required=True)
     return parser.parse_args()
 
 def main() -> None:

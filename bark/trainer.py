@@ -39,11 +39,18 @@ def main(model_path: str, input_files: List[str]) -> None:
     with open(model_path, "wb") as fb:
         pickle.dump(models, fb)
 
+
 def pa() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input-files", nargs="+", default=["data/2021-01-29.train.json"], required=True)
+    parser.add_argument(
+        "--input-files",
+        nargs="+",
+        default=["data/2021-01-29.train.json"],
+        required=True,
+    )
     parser.add_argument("--model-path", type=str, required=True)
     return parser.parse_args()
+
 
 if __name__ == "__main__":
     args = pa()

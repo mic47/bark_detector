@@ -36,13 +36,15 @@ class Label:
             chain(first_line.split("\t"), second_line.split("\t"))
         )
         assert sep == "\\"
-        return Label(float(start), float(end), label.strip(), float(min_freq), float(max_freq))
+        return Label(
+            float(start), float(end), label.strip(), float(min_freq), float(max_freq)
+        )
 
     def to_lines(self) -> str:
         return f"{self.start}\t{self.end}\t{self.label}\n\\\t{self.min_freq}\t{self.max_freq}"
 
 
-def main(model_version:str, file: str) -> None:
+def main(model_version: str, file: str) -> None:
 
     with open(f"models/2021-01-29.lr.{model_version}.pickle", "rb") as fb:
         models = pickle.load(fb)
@@ -63,7 +65,16 @@ def main(model_version:str, file: str) -> None:
         coverage = 0.0
         count = 0
         for frame_start, frame_end in chunk(
-            iter(tqdm(np.nonzero(np.ediff1d(predictions.astype(dtype=np.int64), to_begin=0, to_end=1))[0], desc=t_label))
+            iter(
+                tqdm(
+                    np.nonzero(
+                        np.ediff1d(
+                            predictions.astype(dtype=np.int64), to_begin=0, to_end=1
+                        )
+                    )[0],
+                    desc=t_label,
+                )
+            )
         ):
             start = frame_to_time(frame_start)
             end = frame_to_time(frame_end)
@@ -89,14 +100,16 @@ def main(model_version:str, file: str) -> None:
             for label in labels:
                 print(label.to_lines(), file=f)
 
+
 def pa() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--model-version", type=str, required=True)
     parser.add_argument("--files", nargs="+", default=["2021-05-29"], required=True)
     return parser.parse_args()
 
+
 if __name__ == "__main__":
-    args=pa()
+    args = pa()
     print(args)
     for file in args.files:
         main(args.model_version, file)

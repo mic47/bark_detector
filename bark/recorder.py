@@ -52,7 +52,13 @@ def record_stream(
     # Code to acquire resource, e.g.:
     p = pyaudio.PyAudio()
     current_time = time.time_ns() / 1_000_000_000
-    stream = p.open(format=pyaudio.paFloat32, channels=channels, rate=fs, frames_per_buffer=chunk, input=True)
+    stream = p.open(
+        format=pyaudio.paFloat32,
+        channels=channels,
+        rate=fs,
+        frames_per_buffer=chunk,
+        input=True,
+    )
     try:
         yield (p, stream, Time(current_time))
     finally:
@@ -61,7 +67,9 @@ def record_stream(
         p.terminate()
 
 
-def timed_stream(start: float, stream: pyaudio.Stream, chunk_size: int, fs: int) -> Iterable[Timed[bytes]]:
+def timed_stream(
+    start: float, stream: pyaudio.Stream, chunk_size: int, fs: int
+) -> Iterable[Timed[bytes]]:
     i = 0
     duration = Time(chunk_size // fs)
     while True:
@@ -93,7 +101,9 @@ def batch_by_time(length: Time, stream: Iterable[Timed[T]]) -> Iterable[List[Tim
 
 def mel_spectrogram(block: Sequence[Timed[bytes]], fs: int) -> np.ndarray:
     data = np.concatenate([np.frombuffer(x.payload, dtype=np.float32) for x in block])
-    spectrogram = librosa.power_to_db(librosa.feature.melspectrogram(y=data, sr=fs, center=True)).T
+    spectrogram = librosa.power_to_db(
+        librosa.feature.melspectrogram(y=data, sr=fs, center=True)
+    ).T
     return cast(np.ndarray, spectrogram)
 
 
@@ -116,7 +126,11 @@ def raw_predict(
         predictions = model.predict(spectrogram)
         preds = []
         for frame_start, frame_end in chunk(
-            iter(np.nonzero(np.ediff1d(predictions.astype(dtype=np.int32), to_begin=0, to_end=1))[0])
+            iter(
+                np.nonzero(
+                    np.ediff1d(predictions.astype(dtype=np.int32), to_begin=0, to_end=1)
+                )[0]
+            )
         ):
             start = frame_to_seconds(frame_start)
             end = frame_to_seconds(frame_end)
@@ -126,7 +140,9 @@ def raw_predict(
         filtered_preds: List[Timed[str]] = []
         for label in preds:
             if filtered_preds and label.start - filtered_preds[-1].end < 0.5:
-                filtered_preds[-1].duration = Time(label.start + label.duration - filtered_preds[-1].start)
+                filtered_preds[-1].duration = Time(
+                    label.start + label.duration - filtered_preds[-1].start
+                )
             else:
                 filtered_preds.append(label)
         out[t_label] = filtered_preds
@@ -140,8 +156,11 @@ class WithPredictions:
     noise_levels: List[Timed[float]]
 
 
-def slice_by_duration(being_sliced: Iterable[Timed[T]], slice_by: Iterable[Timed[R]]) -> Iterable[List[Timed[T]]]:
+def slice_by_duration(
+    being_sliced: Iterable[Timed[T]], slice_by: Iterable[Timed[R]]
+) -> Iterable[List[Timed[T]]]:
     pass
+
 
 # TODO
 #
@@ -150,6 +169,7 @@ def slice_by_duration(being_sliced: Iterable[Timed[T]], slice_by: Iterable[Timed
 # Generate notification if dog barks -- ideally
 # Save samples around predictions and high noise levels (with some buffers in seconds)
 # Migrate training scripts and stuff into this
+
 
 def run_predictions(
     models: Dict[str, Any], fs: int, stream: Iterable[List[Timed[bytes]]]
@@ -185,7 +205,9 @@ def run_predictions(
 
         noises: List[Timed[float]] = []
         for i, noise in enumerate(noise_level[:-1]):
-            noises.append(Timed(Time(frame_to_seconds(i)), Time(ns_per_frame), float(noise)))
+            noises.append(
+                Timed(Time(frame_to_seconds(i)), Time(ns_per_frame), float(noise))
+            )
 
         print(
             spectrogram.shape,
@@ -205,10 +227,18 @@ def main() -> None:
     seconds = 3
     filename = "output.wav"
     models = load_model("v3")
-    with record_stream(channels=channels, fs=fs, chunk=chunk) as (p, stream, start_time):
+    with record_stream(channels=channels, fs=fs, chunk=chunk) as (
+        p,
+        stream,
+        start_time,
+    ):
         sample_size = p.get_sample_size(pyaudio.paFloat32)
         run_predictions(
-            models, fs, batch_by_time(Time(1_000_000_000), timed_stream(start_time, stream, chunk, fs))
+            models,
+            fs,
+            batch_by_time(
+                Time(1_000_000_000), timed_stream(start_time, stream, chunk, fs)
+            ),
         )
         # for d in x:
         #    # print(t / 1_000_000_000, type(d), len(d), (time.time_ns() - t)/1_000_000_000)

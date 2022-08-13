@@ -23,7 +23,7 @@ def chunk(inp: Iterator[str]) -> Iterable[Tuple[str, str]]:
         try:
             second = next(inp)
         except StopIteration:
-            #yield first
+            # yield first
             return
         if second.startswith("\\"):
             yield (first, second)
@@ -40,6 +40,7 @@ class Sample(TypedDict):
     labels: List[str]
     data: List[float]
 
+
 @dataclass
 class Label:
     start: float
@@ -54,10 +55,13 @@ class Label:
             chain(first_line.split("\t"), second_line.split("\t"))
         )
         assert sep == "\\"
-        return Label(float(start), float(end), label.strip(), float(min_freq), float(max_freq))
+        return Label(
+            float(start), float(end), label.strip(), float(min_freq), float(max_freq)
+        )
 
     def to_lines(self) -> str:
         return f"{self.start}\t{self.end}\t{self.label}\n\\\t{self.min_freq}\t{self.max_freq}"
+
 
 def pa() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
@@ -65,6 +69,7 @@ def pa() -> argparse.Namespace:
     parser.add_argument("--input-labels", type=str, required=True)
     parser.add_argument("--output-path", type=str, required=True)
     return parser.parse_args()
+
 
 def main() -> None:
     args = pa()

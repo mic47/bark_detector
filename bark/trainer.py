@@ -14,7 +14,7 @@ def main(model_path: str, input_files: List[str]) -> None:
         with open(filename) as f:
             data.extend(json.loads(f.read()).values())
     models = {}
-    for train_label in ["bark", "talk", "whine"]:
+    for train_label in ["bark", "whine"]:
         samples = []
         labels = []
         for frame in data:
@@ -29,11 +29,11 @@ def main(model_path: str, input_files: List[str]) -> None:
         print(y.shape)
         logreg = LogisticRegression(max_iter=2000)
         model = logreg.fit(X, y)
-        print("Trained")
+        print("Trained", train_label)
         print(model)
-        print(model.get_params())
-        print(model.coef_)
-        print(model.intercept_)
+        #print(model.get_params())
+        #print(model.coef_)
+        #print(model.intercept_)
         print(Counter(zip(model.predict(X), y)))
         models[train_label] = model
     with open(model_path, "wb") as fb:
